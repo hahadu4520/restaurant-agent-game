@@ -1,0 +1,81 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#fff8ec">
+<title>我的餐厅</title>
+<style>
+:root{--cream:#fff8ec;--ink:#222b3d;--sub:#625b55;--blue:#2b6cff;--red:#ff6b5b;--wood:#c98b57;--line:#ddc8ad;--card:#fffbf3;--shadow:0 7px 26px #5e341a22;font-family:"Microsoft YaHei UI","PingFang SC","Noto Sans CJK SC",sans-serif;color:var(--ink)}
+*{box-sizing:border-box} body{margin:0;min-height:100dvh;overflow:hidden;background:radial-gradient(ellipse at 47% 35%,#fffaf1 0%,#fff1dc 64%,#ebc9a7 125%)}button,input{font:inherit}button{cursor:pointer;border:0;color:inherit}button:focus-visible,input:focus-visible{outline:3px solid #ed8d31;outline-offset:3px}button:disabled{opacity:.55;cursor:default}[hidden]{display:none!important}
+#stage,#labels{position:absolute;inset:0;overflow:hidden}#stage canvas{display:block;touch-action:none;cursor:grab}#stage canvas:active{cursor:grabbing}#labels{pointer-events:none;z-index:1}
+.top{position:absolute;z-index:3;top:clamp(12px,2.5vh,34px);left:clamp(16px,3.3vw,64px);right:clamp(16px,3.3vw,64px);display:flex;align-items:flex-start;justify-content:space-between;gap:12px;pointer-events:none}
+.brand{display:grid;min-width:0;justify-items:start;gap:8px}h1{margin:0;font-size:clamp(25px,3.75vw,73px);letter-spacing:-.07em;line-height:1.1;font-weight:950;color:#1b2942;text-shadow:0 2px #fff8ed}
+.tag{display:inline-flex;align-items:center;gap:.5em;background:#e1e9ff;color:#20489e;border-radius:99px;padding:.34em .8em;font-weight:900;font-size:clamp(13px,1.2vw,24px);line-height:1.1}.tag:before{content:'';background:#2b6cff;border-radius:50%;width:.43em;height:.43em}.tag.open{color:#176b45;background:#d9f0dc}.tag.open:before{background:#2d9964}
+.actions{display:flex;justify-content:flex-end;gap:8px;flex-wrap:wrap;pointer-events:auto}.btn{border:1px solid var(--line);border-radius:12px;background:#fffaf2;min-height:42px;padding:.59em .88em;font-weight:900;box-shadow:0 2px 0 #d8bd9c;line-height:1.15;font-size:clamp(14px,1.13vw,23px)}.btn.primary{background:var(--blue);color:white;border-color:#2356dc;box-shadow:0 3px 0 #1949b7}.btn:hover:not(:disabled),.choice:hover:not(:disabled){filter:brightness(.96)}.btn:active:not(:disabled){transform:translateY(2px);box-shadow:none}
+.station,.tablepin,.bubble{position:absolute;transform:translate(-50%,-100%);white-space:nowrap;font-weight:900}.station{pointer-events:auto;display:flex;align-items:center;gap:.42em;background:#f3eee9;color:#504d55;border:2px solid #fff9ed;border-radius:99px;padding:.36em .65em;font-size:clamp(14px,1.2vw,24px);box-shadow:0 3px 0 #6c493333,var(--shadow)}.station:after{content:'';position:absolute;left:50%;top:100%;height:13px;width:2px;background:#fff8ed;box-shadow:1px 0 #5a465175}.station i{display:inline-block;width:.52em;height:.52em;border-radius:50%;background:#9a9396}.station.done i{background:#ffc44b;box-shadow:0 0 8px #ffa820}.station.active{color:white;background:#2b6cff}.station.active i{background:#fff5d7}.tablepin{pointer-events:auto;border:1px solid white;background:#fff9eb;border-radius:10px;padding:.33em .52em;font-size:clamp(13px,1vw,20px);box-shadow:var(--shadow)}.tablepin.target{background:#2b6cff;color:white}.tablepin.busy:not(.target){color:#875829}.tablepin .patience{display:block;height:3px;border-radius:3px;margin-top:3px;background:linear-gradient(90deg,#30ac6b calc(var(--time)*100%),#dcd5c8 0)}.tablepin .patience.urgent{background:linear-gradient(90deg,#ef7756 calc(var(--time)*100%),#e2d7cb 0)}.bubble{background:#fff;border:1px solid var(--line);padding:.36em .7em;border-radius:12px;box-shadow:var(--shadow);font-size:clamp(14px,1.5vw,29px)}.bubble.star{color:#a95b00;background:#fff3c8}
+.bottom{position:absolute;z-index:2;bottom:clamp(10px,2.5vh,30px);left:clamp(16px,3.3vw,64px);right:clamp(16px,3.3vw,64px);display:flex;justify-content:space-between;align-items:flex-end;gap:12px;pointer-events:none}
+.card{pointer-events:auto;background:#fffbf4f7;border:1px solid #cea77f;border-radius:clamp(13px,1.45vw,28px);box-shadow:var(--shadow);padding:clamp(12px,1.25vw,25px)}
+#playbar{width:min(100%,760px)}.card-head{font-size:clamp(18px,1.45vw,29px);font-weight:950;line-height:1.2}.smallline{color:var(--sub);font-size:clamp(13px,1.15vw,22px);font-weight:700;margin:.3em 0 0}.bar-row{display:flex;align-items:center;gap:8px;flex-wrap:wrap}.bar-row .btn{margin-left:auto}.metrics{display:flex;gap:14px;align-items:center;flex-wrap:wrap;font-weight:900}.metric strong{color:#205ddd;font-size:1.3em}.game-hints{display:flex;flex-wrap:wrap;gap:7px;margin-top:9px}.game-hints .btn{font-size:clamp(13px,1vw,18px);min-height:37px}
+.modal{position:absolute;z-index:6;inset:0;display:grid;place-items:center;padding:14px;background:#2e274545;backdrop-filter:blur(3px)}.modal.spectate{align-items:end;background:#2e27451a;backdrop-filter:none;padding-bottom:clamp(18px,5vh,65px)}.dialog{width:min(100%,660px);max-height:min(88dvh,850px);overflow:auto;overscroll-behavior:contain;padding:clamp(17px,2.3vw,38px);position:relative}.dialog.teach{width:min(100%,1120px)}.dialog h2{margin:0 38px .35em 0;font-size:clamp(24px,2.55vw,52px);font-weight:950;letter-spacing:-.05em;line-height:1.14}.dialog p{margin:.4em 0 .9em;line-height:1.48;font-size:clamp(15px,1.25vw,24px)}.dialog .close{position:absolute;top:12px;right:12px;min-width:38px;height:38px;border-radius:50%;font-weight:950;background:#f4e6d4}.dialog .feedback{min-height:1.55em;font-weight:900;color:#97513d;margin:.65em 0}.dialog .feedback.good{color:#227247}.dialog .choice{display:block;width:100%;text-align:left;background:#f0e8dc;border:1px solid #ddc9ac;border-radius:10px;padding:.55em .75em;min-height:43px;font-weight:900;margin:7px 0}.choice.selected,.dialog .choice.selected{background:#e2ecff;border-color:#739cff;color:#184aaf}.dialog .choice.correct{background:#e2f3de;color:#235c3a}.chips{display:flex;gap:7px;flex-wrap:wrap}.chips .choice{width:auto;margin:0}.formline{display:flex;gap:8px;flex-wrap:wrap}.formline input{flex:1;min-width:120px;padding:10px 12px;border:1px solid var(--line);border-radius:10px;background:white}.timer{float:right;font-size:15px;color:#714725;font-weight:900;margin:2px 41px 0 8px}.teach dl{display:grid;grid-template-columns:max-content 1fr;gap:.32em .8em;margin:.5em 0;font-size:clamp(14px,1.42vw,29px);line-height:1.26}.teach dt{font-weight:950;color:#215ed9}.teach dd{margin:0}.teach blockquote{margin:.65em 0 0;padding:.55em .75em;background:#e6eeff;border-radius:12px;color:#194b9f;font-size:clamp(15px,1.7vw,32px);font-weight:950}.board{width:100%;border-collapse:collapse;text-align:left}.board td,.board th{padding:.48em .25em;border-bottom:1px solid var(--line);overflow-wrap:anywhere}.board .me{color:#1959cc;font-weight:950}.board td:nth-child(2){max-width:9em}.fail{position:absolute;inset:30% 15% auto;text-align:center;font-size:22px;line-height:1.5}.summary{background:#e5edff;padding:.55em .7em;border-radius:10px;font-weight:900}
+.command-btn{white-space:nowrap;font-size:clamp(15px,1.35vw,26px)}
+.command-heading{font-size:clamp(20px,1.7vw,34px);line-height:1.15;font-weight:950;margin:.34em 0 .24em}
+.command-hint{margin:.22em 0;color:#504946;font-weight:750;font-size:clamp(13px,1.08vw,21px)}
+#ops-info{color:#2156a6;margin-top:.45em;font-weight:900}
+
+.tablepin.candidate{border:2px solid #729af7;color:#184aa9;background:#f1f5ff}
+
+.station-compare{display:grid;grid-template-columns:max-content 1fr;gap:10px 12px;padding:.72em;background:#f1eadc;border-radius:12px;font-size:clamp(15px,1.16vw,23px);line-height:1.42}
+.station-compare dt{font-weight:950;color:#224daa}.station-compare dd{margin:0}
+.service-pin{border-color:#d1ba96}.service-pin.attention:not(.target){background:#fff0cb;border-color:#d89743;color:#734809}.kitchen-note{font-size:clamp(12px,1.08vw,20px);background:#e7efff;color:#214b9f}.bubble.you{background:#234fbd;color:#fff;border-color:#fff5d8;font-size:clamp(11px,1vw,18px)}
+@media(max-width:680px){.command-heading{font-size:18px}}
+@media(max-width:680px){.top{gap:6px}.actions{max-width:48%;gap:5px}.actions .btn{min-height:34px;padding:6px 8px;font-size:12px}.brand{gap:5px}.bottom{left:9px;right:9px;bottom:max(8px,env(safe-area-inset-bottom));gap:6px}.card-head{font-size:17px}.station{font-size:11px;padding:3px 5px;border-width:1px}.station:after{height:7px}.tablepin{font-size:11px}.smallline{line-height:1.35}.dialog{max-height:89dvh}.game-hints{gap:5px}.game-hints .btn{min-height:34px;padding:5px 7px}}
+@media(max-height:510px) and (min-width:681px){h1{font-size:30px}.top{top:8px}.bottom{bottom:8px}.card{padding:9px 13px}.card-head{font-size:17px}.station{font-size:13px}.dialog{padding:14px}}
+@media(prefers-reduced-motion:reduce){*{scroll-behavior:auto}}
+.identity-form{display:grid;gap:12px}
+.identity-field{display:grid;gap:5px;font-weight:800}
+.identity-field input{width:100%;padding:10px 12px;border:1px solid #d8c7a8;border-radius:10px;background:#fff;font:inherit;font-weight:500}
+.identity-form .btn{justify-self:start}
+#restaurant-title{overflow-wrap:anywhere}
+</style>
+</head>
+<body>
+<div id="stage" aria-label="三维餐厅地图"></div><div id="labels"></div>
+<header class="top">
+  <div class="brand"><h1 id="restaurant-title">我的餐厅</h1><div id="mode" class="tag">自由探索</div></div>
+  <nav class="actions" aria-label="游戏菜单"><button id="player" class="btn">设置昵称</button><button id="rank" class="btn">排行榜</button></nav>
+</header>
+<div class="bottom">
+  <section id="playbar" class="card" aria-live="polite"></section>
+</div>
+<div id="modal" class="modal" hidden><section id="dialog" class="card dialog" role="dialog" aria-modal="true" aria-labelledby="dialog-title"></section></div>
+<noscript><div class="fail">请开启浏览器的脚本功能，再刷新页面。</div></noscript>
+<script>
+/* 现场断网：提前下载 0.159.0 的 three.min.js，放在此 HTML 旁边。
+   将 LOCAL_THREE 改为 './three.min.js'。留空时优先尝试本地同名文件，再依次尝试 CDN。
+   普通打开方式为直接双击。 */
+const LOCAL_THREE = '';
+const THREE_URLS = LOCAL_THREE ? [LOCAL_THREE] : [
+  './three.min.js',
+  'https://cdn.bootcdn.net/ajax/libs/three.js/0.159.0/three.min.js',
+  'https://cdn.staticfile.org/three.js/0.159.0/three.min.js',
+  'https://cdnjs.cloudflare.com/ajax/libs/three.js/0.159.0/three.min.js'
+];
+async function loadThree(){
+  for(const url of THREE_URLS){
+    const loaded = await new Promise(resolve=>{
+      const script=document.createElement('script');
+      const finish=ok=>{clearTimeout(timeout);script.onload=script.onerror=null;if(!ok)script.remove();resolve(ok)};
+      const timeout=setTimeout(()=>finish(false),5000);
+      script.onload=()=>finish(Boolean(window.THREE));script.onerror=()=>finish(false);
+      script.src=url;document.head.append(script);
+    });
+    if(loaded)return;
+  }
+  throw new Error('Three.js 加载失败');
+}
+__SCENE__
+__GAME__
+</script>
+</body>
+</html>
